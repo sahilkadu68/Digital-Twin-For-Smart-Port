@@ -1,0 +1,716 @@
+﻿{
+  "inspectedAt": "2026-10-16T05:33:34.875Z",
+  "collections": [
+    {
+      "name": "vehicles",
+      "count": 20
+    },
+    {
+      "name": "terminals",
+      "count": 6
+    },
+    {
+      "name": "equipment",
+      "count": 30
+    },
+    {
+      "name": "environment_readings",
+      "count": 7
+    },
+    {
+      "name": "containers",
+      "count": 11713
+    }
+  ],
+  "byTerminal": [
+    {
+      "_id": "NSIGT",
+      "count": 1130
+    },
+    {
+      "_id": "NSICT",
+      "count": 2515
+    },
+    {
+      "_id": "APMT",
+      "count": 1664
+    },
+    {
+      "_id": "NSFT",
+      "count": 1430
+    },
+    {
+      "_id": "NSDT",
+      "count": 424
+    },
+    {
+      "_id": "BMCT",
+      "count": 4550
+    }
+  ],
+  "statuses": [
+    {
+      "_id": "customs-hold",
+      "count": 450
+    },
+    {
+      "_id": "gate-out",
+      "count": 370
+    },
+    {
+      "_id": "import",
+      "count": 3768
+    },
+    {
+      "_id": "export",
+      "count": 3336
+    },
+    {
+      "_id": "empty",
+      "count": 953
+    },
+    {
+      "_id": "loaded",
+      "count": 690
+    },
+    {
+      "_id": "transshipment",
+      "count": 1587
+    },
+    {
+      "_id": "inspection",
+      "count": 217
+    },
+    {
+      "_id": "gate-in",
+      "count": 342
+    }
+  ],
+  "types": [
+    {
+      "_id": "40ft-HC",
+      "count": 3448
+    },
+    {
+      "_id": "20ft",
+      "count": 2344
+    },
+    {
+      "_id": "40ft",
+      "count": 4760
+    },
+    {
+      "_id": "45ft-HC",
+      "count": 1161
+    }
+  ],
+  "provenance": [
+    {
+      "_id": true,
+      "count": 11713
+    }
+  ],
+  "dates": [
+    {
+      "_id": "string",
+      "min": "2024-05-01",
+      "max": "2024-07-02",
+      "count": 11713
+    }
+  ],
+  "fields": [
+    {
+      "_id": {
+        "field": "origin",
+        "type": "string"
+      },
+      "count": 11713
+    },
+    {
+      "_id": {
+        "field": "type",
+        "type": "string"
+      },
+      "count": 11713
+    },
+    {
+      "_id": {
+        "field": "containerNumber",
+        "type": "string"
+      },
+      "count": 11713
+    },
+    {
+      "_id": {
+        "field": "_id",
+        "type": "string"
+      },
+      "count": 11713
+    },
+    {
+      "_id": {
+        "field": "column",
+        "type": "int"
+      },
+      "count": 11713
+    },
+    {
+      "_id": {
+        "field": "shippingLine",
+        "type": "string"
+      },
+      "count": 11713
+    },
+    {
+      "_id": {
+        "field": "block",
+        "type": "string"
+      },
+      "count": 11713
+    },
+    {
+      "_id": {
+        "field": "terminal",
+        "type": "string"
+      },
+      "count": 11713
+    },
+    {
+      "_id": {
+        "field": "level",
+        "type": "int"
+      },
+      "count": 11713
+    },
+    {
+      "_id": {
+        "field": "simulated",
+        "type": "bool"
+      },
+      "count": 11713
+    },
+    {
+      "_id": {
+        "field": "status",
+        "type": "string"
+      },
+      "count": 11713
+    },
+    {
+      "_id": {
+        "field": "weight",
+        "type": "double"
+      },
+      "count": 11713
+    },
+    {
+      "_id": {
+        "field": "_class",
+        "type": "string"
+      },
+      "count": 11713
+    },
+    {
+      "_id": {
+        "field": "cargoType",
+        "type": "string"
+      },
+      "count": 11713
+    },
+    {
+      "_id": {
+        "field": "arrivalDate",
+        "type": "string"
+      },
+      "count": 11713
+    },
+    {
+      "_id": {
+        "field": "destination",
+        "type": "string"
+      },
+      "count": 11713
+    },
+    {
+      "_id": {
+        "field": "yard",
+        "type": "string"
+      },
+      "count": 11713
+    },
+    {
+      "_id": {
+        "field": "row",
+        "type": "int"
+      },
+      "count": 11713
+    }
+  ],
+  "duplicateNumbers": [
+    {
+      "groups": 304
+    }
+  ],
+  "collidingSlots": [
+    {
+      "groups": 1633
+    }
+  ],
+  "terminals": [
+    {
+      "code": "NSIGT",
+      "yardCapacity": 18925
+    },
+    {
+      "code": "NSICT",
+      "yardCapacity": 22638
+    },
+    {
+      "code": "NSFT",
+      "yardCapacity": 23433
+    },
+    {
+      "code": "APMT",
+      "yardCapacity": 34354
+    },
+    {
+      "code": "BMCT",
+      "yardCapacity": 78000
+    },
+    {
+      "code": "NSDT",
+      "yardCapacity": 2310
+    }
+  ],
+  "equipmentBlocks": [
+    "AP-01",
+    "AP-02",
+    "AP-03",
+    "BM-01",
+    "BM-02",
+    "BM-03",
+    "NS-01",
+    "NS-02",
+    "NS-03"
+  ],
+  "otherSchemas": [
+    {
+      "name": "terminals",
+      "fields": [
+        {
+          "_id": {
+            "field": "operator",
+            "type": "string"
+          },
+          "count": 6
+        },
+        {
+          "_id": {
+            "field": "name",
+            "type": "string"
+          },
+          "count": 6
+        },
+        {
+          "_id": {
+            "field": "_id",
+            "type": "objectId"
+          },
+          "count": 6
+        },
+        {
+          "_id": {
+            "field": "code",
+            "type": "string"
+          },
+          "count": 6
+        },
+        {
+          "_id": {
+            "field": "yardCapacity",
+            "type": "int"
+          },
+          "count": 6
+        },
+        {
+          "_id": {
+            "field": "quayLength",
+            "type": "int"
+          },
+          "count": 6
+        },
+        {
+          "_id": {
+            "field": "berths",
+            "type": "int"
+          },
+          "count": 6
+        },
+        {
+          "_id": {
+            "field": "rtgcCount",
+            "type": "int"
+          },
+          "count": 5
+        },
+        {
+          "_id": {
+            "field": "rmqcCount",
+            "type": "int"
+          },
+          "count": 5
+        },
+        {
+          "_id": {
+            "field": "_class",
+            "type": "string"
+          },
+          "count": 6
+        },
+        {
+          "_id": {
+            "field": "yardAreaHa",
+            "type": "double"
+          },
+          "count": 5
+        },
+        {
+          "_id": {
+            "field": "capacityMillionTeu",
+            "type": "double"
+          },
+          "count": 5
+        }
+      ],
+      "simulated": [
+        {
+          "_id": null,
+          "count": 6
+        }
+      ]
+    },
+    {
+      "name": "equipment",
+      "fields": [
+        {
+          "_id": {
+            "field": "liftsPerHour",
+            "type": "int"
+          },
+          "count": 30
+        },
+        {
+          "_id": {
+            "field": "terminal",
+            "type": "string"
+          },
+          "count": 30
+        },
+        {
+          "_id": {
+            "field": "type",
+            "type": "string"
+          },
+          "count": 30
+        },
+        {
+          "_id": {
+            "field": "_id",
+            "type": "objectId"
+          },
+          "count": 30
+        },
+        {
+          "_id": {
+            "field": "equipmentId",
+            "type": "string"
+          },
+          "count": 30
+        },
+        {
+          "_id": {
+            "field": "block",
+            "type": "string"
+          },
+          "count": 30
+        },
+        {
+          "_id": {
+            "field": "status",
+            "type": "string"
+          },
+          "count": 30
+        },
+        {
+          "_id": {
+            "field": "utilization",
+            "type": "double"
+          },
+          "count": 30
+        },
+        {
+          "_id": {
+            "field": "simulated",
+            "type": "bool"
+          },
+          "count": 30
+        },
+        {
+          "_id": {
+            "field": "_class",
+            "type": "string"
+          },
+          "count": 30
+        }
+      ],
+      "simulated": [
+        {
+          "_id": true,
+          "count": 30
+        }
+      ]
+    },
+    {
+      "name": "vehicles",
+      "fields": [
+        {
+          "_id": {
+            "field": "destination",
+            "type": "string"
+          },
+          "count": 20
+        },
+        {
+          "_id": {
+            "field": "latitude",
+            "type": "double"
+          },
+          "count": 20
+        },
+        {
+          "_id": {
+            "field": "type",
+            "type": "string"
+          },
+          "count": 20
+        },
+        {
+          "_id": {
+            "field": "_id",
+            "type": "objectId"
+          },
+          "count": 20
+        },
+        {
+          "_id": {
+            "field": "vehicleId",
+            "type": "string"
+          },
+          "count": 20
+        },
+        {
+          "_id": {
+            "field": "zone",
+            "type": "string"
+          },
+          "count": 20
+        },
+        {
+          "_id": {
+            "field": "longitude",
+            "type": "double"
+          },
+          "count": 20
+        },
+        {
+          "_id": {
+            "field": "status",
+            "type": "string"
+          },
+          "count": 20
+        },
+        {
+          "_id": {
+            "field": "simulated",
+            "type": "bool"
+          },
+          "count": 20
+        },
+        {
+          "_id": {
+            "field": "_class",
+            "type": "string"
+          },
+          "count": 20
+        },
+        {
+          "_id": {
+            "field": "lastUpdated",
+            "type": "string"
+          },
+          "count": 20
+        }
+      ],
+      "simulated": [
+        {
+          "_id": true,
+          "count": 20
+        }
+      ]
+    },
+    {
+      "name": "environment_readings",
+      "fields": [
+        {
+          "_id": {
+            "field": "pm10",
+            "type": "double"
+          },
+          "count": 7
+        },
+        {
+          "_id": {
+            "field": "_id",
+            "type": "objectId"
+          },
+          "count": 7
+        },
+        {
+          "_id": {
+            "field": "aqiCondition",
+            "type": "string"
+          },
+          "count": 7
+        },
+        {
+          "_id": {
+            "field": "pm25Condition",
+            "type": "string"
+          },
+          "count": 7
+        },
+        {
+          "_id": {
+            "field": "pm10Condition",
+            "type": "string"
+          },
+          "count": 7
+        },
+        {
+          "_id": {
+            "field": "noise",
+            "type": "double"
+          },
+          "count": 7
+        },
+        {
+          "_id": {
+            "field": "simulated",
+            "type": "bool"
+          },
+          "count": 7
+        },
+        {
+          "_id": {
+            "field": "temperature",
+            "type": "double"
+          },
+          "count": 7
+        },
+        {
+          "_id": {
+            "field": "windSpeed",
+            "type": "double"
+          },
+          "count": 7
+        },
+        {
+          "_id": {
+            "field": "visibility",
+            "type": "double"
+          },
+          "count": 7
+        },
+        {
+          "_id": {
+            "field": "_class",
+            "type": "string"
+          },
+          "count": 7
+        },
+        {
+          "_id": {
+            "field": "aqi",
+            "type": "double"
+          },
+          "count": 7
+        },
+        {
+          "_id": {
+            "field": "location",
+            "type": "string"
+          },
+          "count": 7
+        },
+        {
+          "_id": {
+            "field": "timestamp",
+            "type": "string"
+          },
+          "count": 7
+        },
+        {
+          "_id": {
+            "field": "pm25",
+            "type": "double"
+          },
+          "count": 7
+        },
+        {
+          "_id": {
+            "field": "so2",
+            "type": "double"
+          },
+          "count": 7
+        },
+        {
+          "_id": {
+            "field": "no2",
+            "type": "double"
+          },
+          "count": 7
+        },
+        {
+          "_id": {
+            "field": "co",
+            "type": "double"
+          },
+          "count": 7
+        },
+        {
+          "_id": {
+            "field": "humidity",
+            "type": "double"
+          },
+          "count": 7
+        }
+      ],
+      "simulated": [
+        {
+          "_id": true,
+          "count": 7
+        }
+      ]
+    }
+  ],
+  "orphanTerminals": [],
+  "invalidDates": 0,
+  "weightRange": [
+    {
+      "_id": null,
+      "min": 0,
+      "max": 31109,
+      "distinctValues": 7
+    }
+  ]
+}

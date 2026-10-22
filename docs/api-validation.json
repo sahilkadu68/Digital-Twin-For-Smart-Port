@@ -1,0 +1,20 @@
+{
+  "generatedAt": "2026-10-16T05:31:31.341Z",
+  "api": "http://localhost:8082/api/v1",
+  "checks": 49,
+  "totalContainers": 11713,
+  "broadRangeTotal": 11713,
+  "totalTeus": 21082,
+  "byTerminal": {
+    "BMCT": 4550,
+    "NSICT": 2515,
+    "APMT": 1664,
+    "NSFT": 1430,
+    "NSIGT": 1130,
+    "NSDT": 424
+  },
+  "totalCapacity": 179660,
+  "occupiedRecords": 11343,
+  "utilizationPercent": 6.3,
+  "simulated": 11713
+}
