@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { getReportSummary, type ReportSummary, type ReportFilters } from '@/services/reportService'
-import { exportToPDF, exportToExcel } from '@/utils/reportExport'
+import { exportToPDF, exportToExcel, reportInsights } from '@/utils/reportExport'
 import Panel from '@/components/ui/Panel'
 import BaseChart from '@/components/charts/BaseChart'
 import { CHART_COLORS, CHART_TEXT_COLOR, CHART_GRID_COLOR, CHART_TOOLTIP_STYLE } from '@/constants'
@@ -428,6 +428,9 @@ export default function ReportsPage() {
 
           {report.totalContainers === 0 && <p role="status" className="text-sm text-text-muted">No inventory records match these filters. Try All Dates; seeded records may be historical.</p>}
           <p className="text-xs text-text-muted">Current inventory grouped by recorded arrival date; this is not historical throughput or gate movement history.</p>
+          <Panel title="Operational observations" subtitle="Rule-based review flags from the generated snapshot">
+            <ul className="list-disc pl-4 space-y-1 text-xs text-text-secondary">{reportInsights(report).map(insight => <li key={insight}>{insight}</li>)}</ul>
+          </Panel>
           {/* KPI cards */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
             <MetricCard label="Total Containers" value={report.totalContainers} />
