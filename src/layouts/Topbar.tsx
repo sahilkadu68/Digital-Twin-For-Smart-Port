@@ -1,3 +1,4 @@
+import { useAuthStore } from '@/store/authStore'
 import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import SearchInput from '@/components/ui/SearchInput'
@@ -12,6 +13,8 @@ const PAGE_TITLES: Record<string, string> = {
 
 export default function Topbar() {
   const { loadedAt, loading, error, refetch } = useInventory()
+  const logout = useAuthStore(s => s.logout)
+  const [logoutError, setLogoutError] = useState('')
   const location    = useLocation()
   const pageTitle   = PAGE_TITLES[location.pathname] ?? 'Smart Port'
   const searchQuery = useAppStore(s => s.searchQuery)
@@ -60,6 +63,8 @@ export default function Topbar() {
         <p className="text-2xs font-mono text-text-muted">{dateStr}</p>
       </div>
 
+      {logoutError && <span role="alert" className="text-xs text-red-600">{logoutError}</span>}
+      <button className="text-xs text-text-muted" onClick={() => { void logout().catch(() => setLogoutError('Sign out failed. Try again.')) }}>Sign out</button>
       {/* Connection status */}
       <button onClick={() => void refetch()} disabled={loading} className="text-xs text-text-muted" title={loadedAt ? `Inventory snapshot: ${loadedAt}` : 'Inventory not loaded'}>
         {loading ? 'Loading inventory…' : error ? 'Retry inventory' : 'Refresh inventory'}

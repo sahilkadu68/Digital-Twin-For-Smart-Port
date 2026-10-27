@@ -36,6 +36,12 @@ const useInventoryStore = create<InventoryState>(() => ({
   loading: true, error: null, loadedAt: null,
 }))
 let pending: Promise<void> | null = null
+let generation = 0
+window.addEventListener('auth-expired', () => {
+  generation++
+  pending = null
+  useInventoryStore.setState({ containers: [], terminals: [], equipment: [], stats: null, metrics: null, loadedAt: null, error: null, loading: false })
+})
 
 export const tradeCategory = (c: Container) => c.tradeCategory?.trim().toLowerCase()
   || (['import', 'export', 'transshipment'].includes(c.status) ? c.status : 'unknown')
@@ -43,8 +49,10 @@ export const tradeCategory = (c: Container) => c.tradeCategory?.trim().toLowerCa
 export function refreshInventory(): Promise<void> {
   if (pending) return pending
   useInventoryStore.setState({ loading: true, error: null })
+  const requestedGeneration = generation
   pending = Promise.all([getAllContainers(), getTerminals(), apiFetch<EquipmentRecord[]>('/equipment')])
     .then(([containers, terminals, equipment]) => {
+      if (generation !== requestedGeneration) return
       const byStatus = Object.fromEntries(['import', 'export', 'transshipment', 'gate-in', 'gate-out', 'customs-hold', 'inspection', 'empty', 'loaded'].map(s => [s, 0])) as Record<ContainerStatus, number>
       containers.forEach(c => { const s = c.status?.toLowerCase() as ContainerStatus; byStatus[s] = (byStatus[s] ?? 0) + 1 })
       const totalCapacity = terminals.reduce((n, t) => n + t.yardCapacity, 0)
@@ -57,8 +65,8 @@ export function refreshInventory(): Promise<void> {
         utilizationPercent: totalCapacity ? Math.round(occupied / totalCapacity * 1000) / 10 : 0,
       } })
     })
-    .catch(e => { useInventoryStore.setState({ error: e instanceof Error ? e.message : 'Inventory unavailable' }) })
-    .finally(() => { pending = null; useInventoryStore.setState({ loading: false }) })
+    .catch(e => { if (generation !== requestedGeneration) return; useInventoryStore.setState({ error: e instanceof Error ? e.message : 'Inventory unavailable' }) })
+    .finally(() => { if (generation !== requestedGeneration) return; pending = null; useInventoryStore.setState({ loading: false }) })
   return pending
 }
 

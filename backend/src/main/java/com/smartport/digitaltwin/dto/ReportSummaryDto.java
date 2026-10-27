@@ -10,6 +10,12 @@ import java.util.Map;
 public class ReportSummaryDto {
 
     // ── Header ─────────────────────────────────────────────────────────
+    private String statusFilter = "ALL";
+    private ReportOperationsDto operations;
+    public String getStatusFilter() { return statusFilter; }
+    public void setStatusFilter(String status) { this.statusFilter=status; }
+    public ReportOperationsDto getOperations() { return operations; }
+    public void setOperations(ReportOperationsDto operations) { this.operations=operations; }
     private String generatedAt;           // ISO-8601 timestamp
     private String reportPeriod;          // e.g. "2024-05-01 to 2024-07-02"
     private String terminalFilter;        // "ALL" or terminal code

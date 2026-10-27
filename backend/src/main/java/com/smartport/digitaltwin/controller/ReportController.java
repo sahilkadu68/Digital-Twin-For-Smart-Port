@@ -28,8 +28,9 @@ public class ReportController {
             @RequestParam(defaultValue = "ALL")  String terminal,
             @RequestParam(defaultValue = "ALL")  String trade,
             @RequestParam(required = false)      String startDate,
-            @RequestParam(required = false)      String endDate
+            @RequestParam(required = false)      String endDate,
+            @RequestParam(defaultValue = "ALL") String status
     ) {
-        return reportService.buildSummary(terminal, trade, startDate, endDate);
+        return reportService.buildSummary(terminal, trade, startDate, endDate, status);
     }
 }

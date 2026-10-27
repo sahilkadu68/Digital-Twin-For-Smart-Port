@@ -39,7 +39,7 @@ export async function exportToPDF(report: ReportSummary, periodLabel: string) {
 
   // ── Header ──────────────────────────────────────────────────────────
   doc.setFillColor(15, 23, 42)  // slate-900
-  doc.rect(0, 0, PAGE_W, 28, 'F')
+  doc.rect(0, 0, PAGE_W, 36, 'F')
 
   doc.setTextColor(255, 255, 255)
   doc.setFontSize(15)
@@ -52,39 +52,37 @@ export async function exportToPDF(report: ReportSummary, periodLabel: string) {
 
   doc.setFontSize(8)
   doc.setTextColor(148, 163, 184)   // slate-400
-  doc.text(`Generated: ${fmtDate(report.generatedAt)}`, PAGE_W - MARGIN, 11, { align: 'right' })
-  doc.text(`Period: ${report.reportPeriod}`, PAGE_W - MARGIN, 18, { align: 'right' })
+  doc.text(`Generated: ${fmtDate(report.generatedAt)}`, MARGIN, 25)
+  doc.text(`Period: ${report.reportPeriod}`, MARGIN, 31)
 
   // Simulated-data banner
   if (report.containsSimulatedData) {
     doc.setFillColor(234, 179, 8)   // amber-500
-    doc.rect(0, 28, PAGE_W, 6, 'F')
+    doc.rect(0, 36, PAGE_W, 6, 'F')
     doc.setTextColor(30, 27, 12)
     doc.setFontSize(7)
     doc.setFont('helvetica', 'bold')
     doc.text(
-      '⚠  SIMULATED DATA  —  This report is generated from synthetic seed data and does not represent live JNPA operational figures.',
-      PAGE_W / 2, 32, { align: 'center' }
+      'SIMULATED DATA - Synthetic records do not represent verified JNPA operational figures.',
+      PAGE_W / 2, 40, { align: 'center' }
     )
   }
 
-  let y = report.containsSimulatedData ? 42 : 36
+  let y = report.containsSimulatedData ? 50 : 44
 
   // ── Filters applied ──────────────────────────────────────────────────
   doc.setTextColor(51, 65, 85)    // slate-700
   doc.setFontSize(8)
   doc.setFont('helvetica', 'normal')
-  doc.text(
-    `Filters — Terminal: ${report.terminalFilter}  |  Trade: ${report.tradeFilter.toUpperCase()}  |  Period: ${periodLabel}`,
-    MARGIN, y
-  )
-  y += 8
+  const filterLines = doc.splitTextToSize(`Filters - Terminal: ${report.terminalFilter} | Trade: ${report.tradeFilter.toUpperCase()} | Status: ${report.statusFilter} | Period: ${periodLabel}`, CONTENT_W)
+  doc.text(filterLines, MARGIN, y)
+  y += filterLines.length * 4 + 5
 
   // ── Summary metric boxes ─────────────────────────────────────────────
   const metrics = [
     { label: 'Total Containers', value: n(report.totalContainers) },
     { label: 'Total TEUs',       value: n(report.totalTeus) },
-    { label: 'Weight (t)',       value: n(report.totalWeightTonnes, 1) },
+    { label: 'Recorded weight (t)',       value: n(report.totalWeightTonnes, 1) },
     { label: 'Imports',          value: n(report.importCount) },
     { label: 'Exports',          value: n(report.exportCount) },
     { label: 'Transshipment',    value: n(report.transshipmentCount) },
@@ -135,7 +133,7 @@ export async function exportToPDF(report: ReportSummary, periodLabel: string) {
     startY: y,
     head: [['Terminal', 'Containers', 'Share']],
     body: terminalRows,
-    margin: { left: MARGIN, right: MARGIN },
+    margin: { left: MARGIN, right: MARGIN, bottom: 18 },
     styles: { fontSize: 9, cellPadding: 3 },
     headStyles: { fillColor: [15, 23, 42], textColor: 255, fontStyle: 'bold' },
     alternateRowStyles: { fillColor: [248, 250, 252] },
@@ -164,7 +162,7 @@ export async function exportToPDF(report: ReportSummary, periodLabel: string) {
     startY: y,
     head: [['Status', 'Count']],
     body: statusRows,
-    margin: { left: MARGIN, right: MARGIN },
+    margin: { left: MARGIN, right: MARGIN, bottom: 18 },
     styles: { fontSize: 9, cellPadding: 3 },
     headStyles: { fillColor: [15, 23, 42], textColor: 255, fontStyle: 'bold' },
     alternateRowStyles: { fillColor: [248, 250, 252] },
@@ -185,14 +183,14 @@ export async function exportToPDF(report: ReportSummary, periodLabel: string) {
   const typeRows = Object.entries(report.byType).map(([type, cnt]) => [
     type,
     n(cnt as number),
-    type.startsWith('20') ? '1 TEU' : '2 TEU',
+    teuLabel(type),
   ])
 
   autoTable(doc, {
     startY: y,
     head: [['Type', 'Count', 'TEU Factor']],
     body: typeRows,
-    margin: { left: MARGIN, right: MARGIN },
+    margin: { left: MARGIN, right: MARGIN, bottom: 18 },
     styles: { fontSize: 9, cellPadding: 3 },
     headStyles: { fillColor: [15, 23, 42], textColor: 255, fontStyle: 'bold' },
     alternateRowStyles: { fillColor: [248, 250, 252] },
@@ -216,7 +214,7 @@ export async function exportToPDF(report: ReportSummary, periodLabel: string) {
       startY: y,
       head: [['Arrival Date', 'Containers']],
       body: trendRows,
-      margin: { left: MARGIN, right: MARGIN },
+      margin: { left: MARGIN, right: MARGIN, bottom: 18 },
       styles: { fontSize: 9, cellPadding: 3 },
       headStyles: { fillColor: [15, 23, 42], textColor: 255, fontStyle: 'bold' },
       alternateRowStyles: { fillColor: [248, 250, 252] },
@@ -224,6 +222,13 @@ export async function exportToPDF(report: ReportSummary, periodLabel: string) {
   }
 
   // ── Footer on each page ──────────────────────────────────────────────
+  doc.addPage()
+  autoTable(doc, {
+    startY: 20, head: [['Operational context / data quality', 'Value']], body: operationalRows(report),
+    margin: { left: MARGIN, right: MARGIN, bottom: 18 },
+    styles: { fontSize: 8, cellPadding: 2, overflow: 'linebreak' },
+    columnStyles: { 0: { cellWidth: 60 } }, headStyles: { fillColor: [15,23,42] },
+  })
   const totalPages = doc.getNumberOfPages()
   for (let p = 1; p <= totalPages; p++) {
     doc.setPage(p)
@@ -232,11 +237,11 @@ export async function exportToPDF(report: ReportSummary, periodLabel: string) {
     doc.setFontSize(7)
     doc.setTextColor(148, 163, 184)
     doc.setFont('helvetica', 'normal')
-    doc.text('Smart Port Digital Twin · JNPA Reference Model · Simulated Data', MARGIN, 290)
+    doc.text(`Smart Port Digital Twin | JNPA Reference | ${report.containsSimulatedData ? 'Contains simulated data' : 'Provenance not verified'}`, MARGIN, 290)
     doc.text(`Page ${p} of ${totalPages}`, PAGE_W - MARGIN, 290, { align: 'right' })
   }
 
-  doc.save(`JNPA_Port_Report_${new Date().toISOString().slice(0, 10)}.pdf`)
+  doc.save(reportFilename(report, 'pdf'))
 }
 
 
@@ -255,6 +260,7 @@ export async function exportToExcel(report: ReportSummary) {
     ['Report Period', report.reportPeriod],
     ['Terminal Filter', report.terminalFilter],
     ['Trade Filter', report.tradeFilter.toUpperCase()],
+    ['Status Filter', report.statusFilter],
     [''],
     ['Simulated Data', report.containsSimulatedData ? 'YES — figures are synthetic seed data' : 'No'],
     [''],
@@ -307,7 +313,7 @@ export async function exportToExcel(report: ReportSummary) {
   const typeRows: (string | number)[][] = [
     ['Container Type', 'Count', 'TEU Factor'],
     ...Object.entries(report.byType).map(([t, c]) => [
-      t, c as number, t.startsWith('20') ? 1 : 2,
+      t, c as number, teuLabel(t),
     ]),
     [''],
     ['Cargo Type', 'Count'],
@@ -328,5 +334,34 @@ export async function exportToExcel(report: ReportSummary) {
     XLSX.utils.book_append_sheet(wb, wsTrend, 'Arrival Trend')
   }
 
-  XLSX.writeFile(wb, `JNPA_Port_Report_${new Date().toISOString().slice(0, 10)}.xlsx`)
+  const operations = XLSX.utils.aoa_to_sheet([['Operational context / data quality', 'Value'], ...operationalRows(report)])
+  operations['!cols'] = [{ wch: 40 }, { wch: 100 }]
+  XLSX.utils.book_append_sheet(wb, operations, 'Operations & Quality')
+  XLSX.writeFile(wb, reportFilename(report, 'xlsx'))
+}
+
+function teuLabel(type: string): string {
+  return type === '20ft' ? '1 TEU' : ['40ft','40ft-HC','45ft-HC'].includes(type) ? '2 TEU' : 'Unknown; excluded'
+}
+function reportFilename(report: ReportSummary, extension: string) {
+  return `JNPA_${report.terminalFilter.replace(/[^a-z0-9_-]/gi,'_')}_${report.generatedAt.replace(/[^0-9]/g,'').slice(0,14)}.${extension}`
+}
+export function operationalRows(report: ReportSummary): (string | number)[][] {
+  const op = report.operations
+  const rows: (string | number)[][] = [
+    ['Active matching records', op.activeContainers], ['Departed matching records', op.departedContainers],
+    ['Selected terminal capacity', op.capacity], ['Cohort utilization (%)', op.utilizationPercent ?? 'Unavailable'],
+    ['Status filter', report.statusFilter],
+    ...op.yards.map(row => [`Yard ${row.terminal}`, `${row.active} active / ${row.capacity} capacity; ${row.utilizationPercent ?? 'unavailable'}%; ${row.status}`]),
+    ...Object.entries(op.quality).map(([key, value]) => [key.replace(/([A-Z])/g,' $1'), value]),
+  ]
+  const env = op.environment
+  rows.push(['Environment timestamp', env?.timestamp ?? 'Unavailable'], ['Environment freshness', op.environmentStale === null ? 'Unknown' : op.environmentStale ? 'Stale/future timestamp' : 'Within 24 hours'])
+  if (env) for (const key of ['aqi','pm25','pm10','so2','no2','co','temperature','humidity','windSpeed','visibility','noise'] as const) {
+    const reading = env[key]
+    if (reading) rows.push([reading.parameter, `${reading.value} ${reading.unit}; ${reading.condition}`])
+  }
+  Object.entries(report.byCargo).forEach(([key, count]) => rows.push([`Cargo: ${key}`, count]))
+  op.notes.forEach((note, i) => rows.push([`Definition / limitation ${i + 1}`, note]))
+  return rows
 }

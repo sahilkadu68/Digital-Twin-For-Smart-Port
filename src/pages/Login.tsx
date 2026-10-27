@@ -1,0 +1,37 @@
+import { useState, type FormEvent } from 'react'
+import { Navigate, useLocation } from 'react-router-dom'
+import { useAuthStore } from '@/store/authStore'
+import { apiFetch } from '@/services/api'
+
+export default function LoginPage() {
+  const { user, login } = useAuthStore()
+  const location = useLocation()
+  const [register, setRegister] = useState(false)
+  const [email, setEmail] = useState(''), [password, setPassword] = useState('')
+  const [message, setMessage] = useState(''), [busy, setBusy] = useState(false)
+  const from = location.state?.from as string | undefined
+  if (user) return <Navigate to={from?.startsWith('/') && !from.startsWith('//') && from !== '/login' ? from : '/dashboard'} replace />
+  const submit = async (event: FormEvent) => {
+    event.preventDefault(); setMessage(''); setBusy(true)
+    try {
+      if (register) {
+        await apiFetch('/auth/register', { method: 'POST', body: JSON.stringify({ email, password }) })
+        setRegister(false); setPassword(''); setMessage('Account created. Sign in to continue.')
+      } else { await login(email, password); setPassword('') }
+    } catch (error) { setMessage(error instanceof Error ? error.message : 'Unable to sign in') }
+    finally { setBusy(false) }
+  }
+  return <main className="min-h-screen flex items-center justify-center bg-bg-base p-5">
+    <form onSubmit={submit} className="w-full max-w-sm rounded-lg border border-border-subtle bg-bg-surface p-7 shadow-panel space-y-4">
+      <div><p className="text-xs font-semibold tracking-widest text-accent-primary">SMART PORT DIGITAL TWIN</p>
+        <h1 className="mt-3 text-xl font-semibold text-text-primary">{register ? 'Create account' : 'Sign in'}</h1>
+        <p className="mt-1 text-xs text-text-muted">JNPA reference port · Operational workspace</p></div>
+      <label className="block text-sm text-text-secondary">Email<input type="email" autoComplete="username" required maxLength={254} value={email} onChange={e => setEmail(e.target.value)} className="mt-1 w-full rounded border border-border-subtle bg-bg-elevated p-2 text-text-primary" /></label>
+      <label className="block text-sm text-text-secondary">Password<input type="password" autoComplete={register ? 'new-password' : 'current-password'} required minLength={register ? 12 : 1} maxLength={72} value={password} onChange={e => setPassword(e.target.value)} className="mt-1 w-full rounded border border-border-subtle bg-bg-elevated p-2 text-text-primary" /></label>
+      {register && <p className="text-xs text-text-muted">Use a unique passphrase of 12–72 characters, at most 72 UTF-8 bytes.</p>}
+      {message && <p role="status" className="text-sm text-text-secondary">{message}</p>}
+      <button disabled={busy} className="w-full rounded bg-accent-primary p-2 text-sm font-medium text-white disabled:opacity-50">{busy ? 'Please wait…' : register ? 'Create account' : 'Sign in'}</button>
+      <button type="button" disabled={busy} onClick={() => { setRegister(!register); setMessage(''); setPassword('') }} className="w-full text-xs text-accent-primary">{register ? 'Already registered? Sign in' : 'Create an account'}</button>
+    </form>
+  </main>
+}

@@ -16,8 +16,10 @@ public class ReportService {
 
     private final ContainerRepository containerRepo;
 
-    public ReportService(ContainerRepository containerRepo) {
-        this.containerRepo = containerRepo;
+    private final com.smartport.digitaltwin.repository.TerminalRepository terminalRepo;
+    private final EnvironmentService environment;
+    public ReportService(ContainerRepository containerRepo, com.smartport.digitaltwin.repository.TerminalRepository terminalRepo, EnvironmentService environment) {
+        this.containerRepo = containerRepo; this.terminalRepo=terminalRepo; this.environment=environment;
     }
 
     /**
@@ -30,6 +32,11 @@ public class ReportService {
      */
     public ReportSummaryDto buildSummary(String terminal, String trade,
                                          String startDate, String endDate) {
+        return buildSummary(terminal,trade,startDate,endDate,"ALL");
+    }
+    public ReportSummaryDto buildSummary(String terminal,String trade,String startDate,String endDate,String status) {
+        if(!InventoryRules.matches("all",status) && !Set.of("import","export","transshipment","gate-in","gate-out","customs-hold","inspection","empty","loaded").contains(status.trim().toLowerCase(Locale.ROOT)))
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST,"Unsupported status");
 
         // ── 1. Fetch and filter containers ─────────────────────────────
         LocalDate start = InventoryRules.requestDate(startDate);
@@ -41,6 +48,7 @@ public class ReportService {
 
         List<Container> filtered = all.stream()
                 .filter(c -> InventoryRules.matches(c.getTerminal(), terminal))
+                .filter(c -> InventoryRules.matches(c.getStatus(), status))
                 .filter(c -> InventoryRules.matches(InventoryRules.trade(c), trade))
                 .filter(c -> InventoryRules.inRange(c, start, end))
                 .collect(Collectors.toList());
@@ -50,8 +58,9 @@ public class ReportService {
 
         // ── 3. Aggregate top-level metrics ─────────────────────────────
         long totalContainers = filtered.size();
-        long totalTeus = filtered.stream().mapToLong(c -> teuFactor(c.getType())).sum();
+        long totalTeus = filtered.stream().mapToLong(c -> ReportOperations.teuFactor(c.getType())).sum();
         double totalWeightTonnes = filtered.stream()
+                .filter(ReportOperations::validWeight)
                 .mapToDouble(c -> c.getWeight() / 1000.0)
                 .sum();
         totalWeightTonnes = Math.round(totalWeightTonnes * 10.0) / 10.0;
@@ -107,6 +116,8 @@ public class ReportService {
         dto.setByCargo(sortedByValue(byCargo));
         dto.setArrivalTrend(arrivalTrend);
         dto.setContainsSimulatedData(filtered.stream().anyMatch(Container::isSimulated));
+        dto.setStatusFilter(status==null||status.isBlank()?"ALL":status.trim().toUpperCase(Locale.ROOT));
+        dto.setOperations(ReportOperations.build(filtered,terminalRepo.findAll(),terminal,environment.getLatestSnapshot()));
         return dto;
     }
 
@@ -114,11 +125,6 @@ public class ReportService {
 
     private long count(List<Container> list, String status) {
         return list.stream().filter(c -> InventoryRules.trade(c).equalsIgnoreCase(status)).count();
-    }
-
-    private int teuFactor(String type) {
-        if (type == null) return 1;
-        return type.startsWith("20") ? 1 : 2;
     }
 
     private String buildPeriodLabel(String startDate, String endDate, List<Container> filtered) {

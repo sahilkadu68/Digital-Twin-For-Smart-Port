@@ -20,7 +20,7 @@ class InventoryConsistencyTest {
         var repo = mock(ContainerRepository.class);
         when(repo.findAll()).thenReturn(List.of(container("a", "import", "NSICT", "2024-05-01"),
                 container("b", "export", "BMCT", "2024-07-02")));
-        var reports = new ReportService(repo);
+        var reports = new ReportService(repo, mock(TerminalRepository.class), mock(EnvironmentService.class));
         assertEquals(2, reports.buildSummary("ALL", "ALL", null, null).getTotalContainers());
         assertEquals(2, reports.buildSummary("ALL", "ALL", "2000-01-01", "2030-12-31").getTotalContainers());
         assertEquals(1, reports.buildSummary(" nsict ", "IMPORT", "2024-05-01", "2024-05-01").getTotalContainers());
@@ -30,7 +30,7 @@ class InventoryConsistencyTest {
         var repo = mock(ContainerRepository.class);
         when(repo.findAll()).thenReturn(List.of(container("a", "empty", "NSICT", "2024-05-01T20:00:00Z"),
                 container("b", "loaded", "NSICT", null), container("c", "loaded", "NSICT", "broken")));
-        var reports = new ReportService(repo);
+        var reports = new ReportService(repo, mock(TerminalRepository.class), mock(EnvironmentService.class));
         assertEquals(3, reports.buildSummary("ALL", "ALL", null, null).getTotalContainers());
         var summary = reports.buildSummary("ALL", "ALL", "2024-05-02", "2024-05-02");
         assertEquals(1, summary.getTotalContainers());
@@ -40,7 +40,7 @@ class InventoryConsistencyTest {
         var repo = mock(ContainerRepository.class);
         var explicit = container("a", "customs-hold", "NSICT", "2024-05-01"); explicit.setTradeCategory("import");
         when(repo.findAll()).thenReturn(List.of(explicit, container("b", "empty", "NSICT", "2024-05-01")));
-        var summary = new ReportService(repo).buildSummary("ALL", "import", null, null);
+        var summary = new ReportService(repo, mock(TerminalRepository.class), mock(EnvironmentService.class)).buildSummary("ALL", "import", null, null);
         assertEquals(1, summary.getTotalContainers()); assertEquals(1, summary.getImportCount());
     }
     @Test void emptyContainersOccupySlotsAndHistoryIsUnavailable() {
@@ -56,7 +56,7 @@ class InventoryConsistencyTest {
     }
     @Test void invalidFiltersReturn400AndReseedIsGone() throws Exception {
         var repo = mock(ContainerRepository.class);
-        var mvc = MockMvcBuilders.standaloneSetup(new ReportController(new ReportService(repo)), new AdminController()).build();
+        var mvc = MockMvcBuilders.standaloneSetup(new ReportController(new ReportService(repo, mock(TerminalRepository.class), mock(EnvironmentService.class))), new AdminController()).build();
         mvc.perform(get("/api/v1/reports/summary").param("startDate", "bad")).andExpect(status().isBadRequest());
         mvc.perform(get("/api/v1/reports/summary").param("startDate", "2025-01-01").param("endDate", "2024-01-01")).andExpect(status().isBadRequest());
         mvc.perform(get("/api/v1/reports/summary").param("trade", "made-up")).andExpect(status().isBadRequest());

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { getReportSummary, type ReportSummary, type ReportFilters } from '@/services/reportService'
 import { exportToPDF, exportToExcel } from '@/utils/reportExport'
 import Panel from '@/components/ui/Panel'
@@ -168,6 +168,8 @@ export default function ReportsPage() {
   const [endDate,   setEndDate]   = useState('')
   const [terminal,  setTerminal]  = useState('ALL')
   const [trade,     setTrade]     = useState('ALL')
+  const [status, setStatus] = useState('ALL')
+  const request = useRef(0)
 
   const [report,    setReport]    = useState<ReportSummary | null>(null)
   const [loading,   setLoading]   = useState(false)
@@ -175,25 +177,31 @@ export default function ReportsPage() {
   const [exporting, setExporting] = useState<'pdf' | 'xlsx' | null>(null)
 
   const fetchReport = useCallback(async () => {
+    const version = ++request.current
     setReport(null)
     setLoading(true)
     setError(null)
     const filters: ReportFilters = {
       terminal,
-      trade,
+      trade, status,
       startDate: preset !== 'custom' ? resolvePresetDates(preset).startDate : startDate,
       endDate:   preset !== 'custom' ? resolvePresetDates(preset).endDate   : endDate,
     }
     try {
       if (filters.startDate && filters.endDate && filters.startDate > filters.endDate) throw new Error('Start date must not exceed end date.')
       const data = await getReportSummary(filters)
-      setReport(data)
+      if (version === request.current) setReport(data)
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to load report')
+      if (version === request.current) setError(e instanceof Error ? e.message : 'Failed to load report')
     } finally {
-      setLoading(false)
+      if (version === request.current) setLoading(false)
     }
-  }, [terminal, trade, preset, startDate, endDate])
+  }, [terminal, trade, status, preset, startDate, endDate])
+
+  useEffect(() => {
+    request.current++
+    setReport(null); setLoading(false)
+  }, [terminal, trade, status, preset, startDate, endDate])
 
   // Auto-fetch on mount
   useEffect(() => { fetchReport() }, []) // eslint-disable-line react-hooks/exhaustive-deps
@@ -202,6 +210,7 @@ export default function ReportsPage() {
     if (!report) return
     setExporting('pdf')
     try { await exportToPDF(report, report.reportPeriod) }
+    catch { setError('PDF export failed. Please try again.') }
     finally { setExporting(null) }
   }
 
@@ -209,6 +218,7 @@ export default function ReportsPage() {
     if (!report) return
     setExporting('xlsx')
     try { await exportToExcel(report) }
+    catch { setError('Excel export failed. Please try again.') }
     finally { setExporting(null) }
   }
 
@@ -357,6 +367,11 @@ export default function ReportsPage() {
               ))}
             </div>
           </div>
+          <label className="text-xs text-text-secondary">Container status
+            <select aria-label="Container status" value={status} onChange={e => setStatus(e.target.value)} className="ml-2 rounded border border-border-subtle bg-bg-elevated p-1.5">
+              {['ALL','import','export','transshipment','gate-in','gate-out','customs-hold','inspection','empty','loaded'].map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </label>
           <button
             onClick={fetchReport}
             disabled={loading}
@@ -417,12 +432,28 @@ export default function ReportsPage() {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
             <MetricCard label="Total Containers" value={report.totalContainers} />
             <MetricCard label="Total TEUs" value={report.totalTeus} sub="20ft=1, 40ft=2 TEU" />
-            <MetricCard label="Weight (t)" value={report.totalWeightTonnes.toLocaleString('en-IN', { maximumFractionDigits: 0 })} sub="tonnes (gross)" />
+            <MetricCard label="Weight (t)" value={report.totalWeightTonnes.toLocaleString('en-IN', { maximumFractionDigits: 0 })} sub="recorded kg / 1,000" />
             <MetricCard label="Import" value={report.importCount} sub={`${report.totalContainers > 0 ? ((report.importCount / report.totalContainers) * 100).toFixed(0) : 0}% of total`} />
             <MetricCard label="Export" value={report.exportCount} sub={`${report.totalContainers > 0 ? ((report.exportCount / report.totalContainers) * 100).toFixed(0) : 0}% of total`} />
             <MetricCard label="Transshipment" value={report.transshipmentCount} sub={`${report.totalContainers > 0 ? ((report.transshipmentCount / report.totalContainers) * 100).toFixed(0) : 0}% of total`} />
           </div>
 
+          <Panel title="Active inventory and yard capacity" subtitle={`Applied status: ${report.statusFilter} · same date, trade and terminal filters as report`}>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+              <MetricCard label="Active in cohort" value={report.operations.activeContainers} sub="excludes gate-out" />
+              <MetricCard label="Departed in cohort" value={report.operations.departedContainers} />
+              <MetricCard label="Selected capacity" value={report.operations.capacity} sub="stored yard capacity" />
+              <MetricCard label="Cohort utilization" value={report.operations.utilizationPercent === null ? 'Unavailable' : `${report.operations.utilizationPercent}%`} sub="filtered active / selected capacity" />
+            </div>
+            <div className="overflow-x-auto"><table className="w-full text-xs text-left"><thead><tr><th>Terminal</th><th>Active</th><th>Capacity</th><th>Utilization</th><th>Review</th></tr></thead><tbody>
+              {report.operations.yards.map(row => <tr key={row.terminal} className="border-t border-border-subtle"><td className="py-2">{row.terminal}</td><td>{row.active.toLocaleString('en-IN')}</td><td>{row.capacity.toLocaleString('en-IN')}</td><td>{row.utilizationPercent === null ? 'Unavailable' : `${row.utilizationPercent}%`}</td><td>{row.status}</td></tr>)}
+            </tbody></table></div>
+          </Panel>
+          <Panel title="Environment and data quality" subtitle="Latest port-wide reference snapshot; independent of inventory filters">
+            {report.operations.environment ? <p className="text-xs mb-3">AQI: {report.operations.environment.aqi?.value ?? 'Unavailable'} ({report.operations.environment.aqi?.condition ?? 'Unspecified'}) · PM2.5: {report.operations.environment.pm25?.value ?? 'Unavailable'} µg/m³ · Recorded: {report.operations.environment.timestamp} · {report.operations.environmentStale === true ? 'Stale/future timestamp' : report.operations.environmentStale === null ? 'Freshness unknown' : 'Within 24 hours'} · Simulated/unverified provenance</p> : <p className="text-xs mb-3">No environmental readings available.</p>}
+            <div className="flex flex-wrap gap-3 text-xs">{Object.entries(report.operations.quality).map(([key, value]) => <span key={key}>{key.replace(/([A-Z])/g, ' $1')}: <strong>{value}</strong></span>)}</div>
+            <details className="mt-3 text-xs"><summary className="cursor-pointer font-semibold">Definitions and limitations</summary><ul className="mt-2 list-disc pl-4 space-y-1">{report.operations.notes.map(note => <li key={note}>{note}</li>)}</ul></details>
+          </Panel>
           {/* Charts row */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
             <Panel title="Trade Breakdown" subtitle="Import / Export / Transshipment">
