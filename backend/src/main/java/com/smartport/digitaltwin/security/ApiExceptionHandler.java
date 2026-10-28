@@ -24,7 +24,7 @@ public class ApiExceptionHandler {
 
     ResponseEntity<?> validation(MethodArgumentNotValidException e) {
 
-        return ResponseEntity.badRequest().body(Map.of("message","Enter a valid email and a password of 12–72 characters (at most 72 UTF-8 bytes)."));
+        return ResponseEntity.badRequest().body(Map.of("message","Enter a valid email and a password of 8–72 characters (at most 72 UTF-8 bytes)."));
 
     }
 

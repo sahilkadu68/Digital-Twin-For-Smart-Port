@@ -88,6 +88,22 @@ class AuthenticationTest {
         doThrow(new org.springframework.dao.DuplicateKeyException("private internal data")).when(accounts).register(anyString(),anyString());
         mvc.perform(post("/api/v1/auth/register").with(csrf()).contentType("application/json").content(valid)).andExpect(status().isConflict()).andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("private internal"))));
     }
+    @Test void registrationAcceptsEightAndSeventyTwoCharacterPasswords() throws Exception {
+        allow();
+        for (String password : new String[]{"Eight123", "a".repeat(72)}) {
+            String body=new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(java.util.Map.of("email","test@example.com","password",password));
+            mvc.perform(post("/api/v1/auth/register").with(csrf()).contentType("application/json").content(body)).andExpect(status().isCreated());
+            verify(accounts).register("test@example.com",password);
+        }
+    }
+    @Test void registrationRejectsPasswordsOutsideLengthAndByteLimits() throws Exception {
+        allow();
+        for (String password : new String[]{"Seven12", "a".repeat(73), " ".repeat(8), "\u00e9".repeat(37)}) {
+            String body=new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(java.util.Map.of("email","test@example.com","password",password));
+            mvc.perform(post("/api/v1/auth/register").with(csrf()).contentType("application/json").content(body)).andExpect(status().isBadRequest());
+        }
+        verifyNoInteractions(accounts);
+    }
     @Test void corsAllowsOnlyConfiguredFrontendAndBodyLimitWorks() throws Exception {
         mvc.perform(options("/api/v1/auth/register").header("Origin","http://localhost:5173").header("Access-Control-Request-Method","POST")).andExpect(status().isOk()).andExpect(header().string("Access-Control-Allow-Credentials","true"));
         mvc.perform(options("/api/v1/auth/register").header("Origin","https://evil.example").header("Access-Control-Request-Method","POST")).andExpect(status().isForbidden());

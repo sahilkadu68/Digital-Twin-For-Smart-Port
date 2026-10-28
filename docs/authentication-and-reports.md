@@ -11,7 +11,7 @@ Issues corrected: unknown container sizes previously contributed guessed TEUs; i
 ## Setup and authentication
 
 1. Start MongoDB normally. Run `mvn spring-boot:run` in `backend`, and `npm run dev` in the project root. Operational startup seeding stays disabled.
-2. Open `http://localhost:5173`. Register an email and a unique 12–72 character passphrase (at most 72 UTF-8 bytes), then sign in. No default account/password is created. Use the same host consistently: localhost and 127.0.0.1 are different cookie sites.
+2. Open `http://localhost:5173`. Register an email and a unique 8–72 character passphrase (at most 72 UTF-8 bytes), then sign in. No default account/password is created. Use the same host consistently: localhost and 127.0.0.1 are different cookie sites.
 3. New accounts are stored in `user_accounts`: normalized email as unique MongoDB `_id` and BCrypt hash (cost 12). No port inventory/equipment/traffic records or prior credentials are migrated/overwritten. No prior account model was found. Password hashes never appear in API responses.
 4. All users have the same USER permission for the existing shared workspace. Server-side sessions use HttpOnly, SameSite=Lax, cookie-only JSESSIONID, 30-minute inactivity expiry and session-ID rotation. POST logout requires CSRF and invalidates the session/cookie.
 5. All endpoints require authentication except login/register/CSRF and error handling. Existing frontend routes redirect to sign-in. `apiFetch` includes cookies and obtains CSRF before mutations. No credentials/tokens are stored in localStorage. Expired authentication clears inventory and guards against old pending responses repopulating it.

@@ -16,7 +16,7 @@ public class AuthController {
     private final AccountService accounts;
     public AuthController(AccountService accounts) { this.accounts = accounts; }
     public record Registration(@NotBlank @Email @Size(max=254) String email,
-                               @NotBlank @Size(min=12,max=72) String password) {}
+                               @NotBlank @Size(min=8,max=72) String password) {}
     @GetMapping("/csrf") public Map<String,String> csrf(CsrfToken token) {
         return Map.of("token", token.getToken(), "headerName", token.getHeaderName());
     }
